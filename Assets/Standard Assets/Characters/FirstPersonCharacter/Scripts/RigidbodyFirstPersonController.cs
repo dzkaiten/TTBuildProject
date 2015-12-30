@@ -72,6 +72,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
             public float stickToGroundHelperDistance = 0.5f; // stops the character
             public float slowDownRate = 20f; // rate at which the controller comes to a stop when there is no input
             public bool airControl; // can the user control the direction that is being moved in the air
+            [Tooltip("set it to 0.1 or more if you get stuck in wall")]
+            public float shellOffset; //reduce the radius by that ratio to avoid getting stuck in wall (a value of 0.1f is nice)
         }
 
 
@@ -123,7 +125,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             mouseLook.Init (transform, cam.transform);
         }
 
-
+        //Watch the camera rotation every update
         private void Update()
         {
             RotateView();
@@ -134,12 +136,71 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
         }
 
+        //Camera Control
+        private void RotateView()
+        {
+            //avoids the mouse looking if the game is effectively paused
+            if (Mathf.Abs(Time.timeScale) < float.Epsilon) return;
 
+            // get the rotation before it's changed
+            float oldYRotation = transform.eulerAngles.y;
+
+            mouseLook.LookRotation(transform, cam.transform);
+
+            if (m_IsGrounded || advancedSettings.airControl)
+            {
+                // Rotate the rigidbody velocity to match the new direction that the character is looking
+                Quaternion velRotation = Quaternion.AngleAxis(transform.eulerAngles.y - oldYRotation, Vector3.up);
+                m_RigidBody.velocity = velRotation * m_RigidBody.velocity;
+            }
+        }
+
+        /*
+         * Auto-movement 
+         *
+         * Character movement is toggled on and off with the up-arrow on the keyboard
+         * Note to self-- delete the other input keys such as left,right,shift keys
+         *
+         * @author Michael Chin
+         * @date 12/29/2015
+         * 
+         */
+        public bool isMoving = false;
+        //This is a forward vector? da fuq
+        public static float speed = 5.0f;
+        Vector3 forwardMovement = new Vector3(0.0f, 1.0f);
+        Vector3 backwardMovement = new Vector3(0.0f, 0.0f);
+        public int wait = 0;
+        public static int waitTime = 20; //this seems like a reasonable amount of wait time between inputs
+
+        /*
+         * FixedUpdate occurs slightly before Update()
+         */
         private void FixedUpdate()
         {
-            GroundCheck();
-            Vector2 input = GetInput();
+            GroundCheck(); //gotta check the ground k.
+            Vector2 userInput = GetInput();
+            //print(userInput);
+            //print(wait);
 
+            Vector2 input = backwardMovement; //defualt to no-movement
+            if (wait > 0) {
+                wait--; //stall so we dont have multiple inputs
+            }
+            if (userInput.y > 0) {
+                if (wait == 0) {
+                    isMoving = !isMoving; //toggle our move state
+                    wait = waitTime;
+                }
+            }
+
+            //Start moving forward if we should be
+            if(isMoving) {
+                input = forwardMovement;
+            }
+
+            //IGNORE ALL THIS CODE BELOW --------------------------------------------------------------------------------------
+            //This does everything
             if ((Mathf.Abs(input.x) > float.Epsilon || Mathf.Abs(input.y) > float.Epsilon) && (advancedSettings.airControl || m_IsGrounded))
             {
                 // always move along the camera forward as it is the direction that it being aimed at
@@ -156,6 +217,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 }
             }
 
+            //Some kind of jumping code? Probably safe to delete
             if (m_IsGrounded)
             {
                 m_RigidBody.drag = 5f;
@@ -195,9 +257,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private void StickToGroundHelper()
         {
             RaycastHit hitInfo;
-            if (Physics.SphereCast(transform.position, m_Capsule.radius, Vector3.down, out hitInfo,
+            if (Physics.SphereCast(transform.position, m_Capsule.radius * (1.0f - advancedSettings.shellOffset), Vector3.down, out hitInfo,
                                    ((m_Capsule.height/2f) - m_Capsule.radius) +
-                                   advancedSettings.stickToGroundHelperDistance))
+                                   advancedSettings.stickToGroundHelperDistance, ~0, QueryTriggerInteraction.Ignore))
             {
                 if (Mathf.Abs(Vector3.Angle(hitInfo.normal, Vector3.up)) < 85f)
                 {
@@ -219,33 +281,13 @@ namespace UnityStandardAssets.Characters.FirstPerson
             return input;
         }
 
-
-        private void RotateView()
-        {
-            //avoids the mouse looking if the game is effectively paused
-            if (Mathf.Abs(Time.timeScale) < float.Epsilon) return;
-
-            // get the rotation before it's changed
-            float oldYRotation = transform.eulerAngles.y;
-
-            mouseLook.LookRotation (transform, cam.transform);
-
-            if (m_IsGrounded || advancedSettings.airControl)
-            {
-                // Rotate the rigidbody velocity to match the new direction that the character is looking
-                Quaternion velRotation = Quaternion.AngleAxis(transform.eulerAngles.y - oldYRotation, Vector3.up);
-                m_RigidBody.velocity = velRotation*m_RigidBody.velocity;
-            }
-        }
-
-
         /// sphere cast down just beyond the bottom of the capsule to see if the capsule is colliding round the bottom
         private void GroundCheck()
         {
             m_PreviouslyGrounded = m_IsGrounded;
             RaycastHit hitInfo;
-            if (Physics.SphereCast(transform.position, m_Capsule.radius, Vector3.down, out hitInfo,
-                                   ((m_Capsule.height/2f) - m_Capsule.radius) + advancedSettings.groundCheckDistance))
+            if (Physics.SphereCast(transform.position, m_Capsule.radius * (1.0f - advancedSettings.shellOffset), Vector3.down, out hitInfo,
+                                   ((m_Capsule.height/2f) - m_Capsule.radius) + advancedSettings.groundCheckDistance, ~0, QueryTriggerInteraction.Ignore))
             {
                 m_IsGrounded = true;
                 m_GroundContactNormal = hitInfo.normal;
