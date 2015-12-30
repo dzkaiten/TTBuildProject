@@ -154,9 +154,11 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
         }
 
-        string message = "HELLO";
-        public void changeText(string text)
-        {
+        //The String
+        string message = "";
+
+        //@mutator
+        public void changeText(string text) {
             message = text;
         }
 
@@ -165,7 +167,10 @@ namespace UnityStandardAssets.Characters.FirstPerson
          */
         void OnGUI()
         {
-            GUI.Label(new Rect(10, 10, 200, 50), message);
+            //Centered Text.. 
+            var centeredStyle = GUI.skin.GetStyle("Label");
+            centeredStyle.alignment = TextAnchor.UpperCenter;
+            GUI.Label(new Rect(Screen.width / 2 - 50, Screen.height / 2 - 25, 200, 50), message);
         }
 
         /*
