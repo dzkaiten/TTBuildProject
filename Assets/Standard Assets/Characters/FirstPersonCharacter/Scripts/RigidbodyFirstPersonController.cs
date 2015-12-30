@@ -64,7 +64,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
 #endif
         }
 
-
         [Serializable]
         public class AdvancedSettings
         {
@@ -153,6 +152,20 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 Quaternion velRotation = Quaternion.AngleAxis(transform.eulerAngles.y - oldYRotation, Vector3.up);
                 m_RigidBody.velocity = velRotation * m_RigidBody.velocity;
             }
+        }
+
+        string message = "HELLO";
+        public void changeText(string text)
+        {
+            message = text;
+        }
+
+        /*
+         * GUI in front of the player
+         */
+        void OnGUI()
+        {
+            GUI.Label(new Rect(10, 10, 200, 50), message);
         }
 
         /*
