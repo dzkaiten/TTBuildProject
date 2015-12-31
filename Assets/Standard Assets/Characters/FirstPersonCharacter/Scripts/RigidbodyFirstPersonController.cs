@@ -116,23 +116,11 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
         }
 
-
         private void Start()
         {
             m_RigidBody = GetComponent<Rigidbody>();
             m_Capsule = GetComponent<CapsuleCollider>();
             mouseLook.Init (transform, cam.transform);
-        }
-
-        //Watch the camera rotation every update
-        private void Update()
-        {
-            RotateView();
-
-            if (CrossPlatformInputManager.GetButtonDown("Jump") && !m_Jump)
-            {
-                m_Jump = true;
-            }
         }
 
         //Camera Control
@@ -154,27 +142,104 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
         }
 
-        //The String
-        string message = "";
+        /*
+         *-----------------------------------------------------------------------------------------------------------------------------------
+         * Edited Code
+         *
+         *
+         * @date 12/31/2015
+         * @author Michael Chin
+         */
+        
+        /* Game Invarients */
+        private string message = ""; //Test GUI Message for the player
+        private static float speed = 8.0f; //Base speed for the player
+        private Vector3 forwardMovement = new Vector3(0.0f, 1.0f); //Forward Vector
+        private Vector3 backwardMovement = new Vector3(0.0f, 0.0f); //Backward-Stop Vector
+        private static int waitTime = 20; //this seems like a reasonable amount of wait time between inputs
+        private Vector3 startPos = new Vector3(490.0f, 3.0f, 59.0f); //The starting position for the player
 
-        //@mutator
+        /* Game Specific Variables */
+        private float time = 0; //Clock counter
+        private bool gameStarted = false; //Did the game start?
+        private bool isMoving = false; //Is the player currently moving?
+        private int wait = 0; //Wait counter
+
+        /*
+         * changeText
+         * 
+         * Changes the GUI message for the player
+         *
+         * @mutator
+         */
         public void changeText(string text) {
             message = text;
         }
 
         /*
-         * GUI in front of the player
+         * OnGUI
+         *
+         * GUI in front of the player screen
          */
-        void OnGUI()
-        {
-            //Centered Text.. 
+        void OnGUI() {
+            //Format the clock timer
+            var minutes = time / 60; //Divide the guiTime by sixty to get the minutes.
+            var seconds = time % 60;//Use the euclidean division for the seconds.
+            var fraction = (time * 100) % 100;
+            string timerLabel = string.Format("{0:00} : {1:00} : {2:000}", minutes, seconds, fraction);
+
+            //Centered Text Style 
             var centeredStyle = GUI.skin.GetStyle("Label");
             centeredStyle.alignment = TextAnchor.UpperCenter;
-            GUI.Label(new Rect(Screen.width / 2 - 50, Screen.height / 2 - 25, 200, 50), message);
+            //Centered Text with Big Font Style
+            var centeredStyleBig = GUI.skin.GetStyle("Label");
+            centeredStyleBig.fontSize = 20;
+            centeredStyleBig.alignment = TextAnchor.UpperCenter;
+
+            //Display Message
+            GUI.Label(new Rect(Screen.width / 2 - 50, Screen.height / 2 - 25, 200, 50), message, centeredStyle);
+            //Display Time
+            GUI.Label(new Rect(Screen.width / 2 - 50, 25, 200, 50), timerLabel, centeredStyleBig);
+        }
+
+        //Watch the camera rotation every update
+        private void Update() {
+            RotateView();
+
+            //If the game is in progress, we need to be counting the clock
+            if (gameStarted) time += Time.deltaTime;
+
+            //@not needed for our game
+            if (CrossPlatformInputManager.GetButtonDown("Jump") && !m_Jump)
+            {
+                m_Jump = true;
+            }
+        }
+
+     
+        /*
+         * restart
+         *
+         * Restarts the game to its initial state
+         *
+         * @author Michael Chin
+         * @date 12/31/2015
+         */
+        protected void restart() {
+            //Send us back to the start
+            m_RigidBody.position = startPos;
+            
+            //Reset all game variables back to their initial
+            time = 0;
+            gameStarted = false;
+            isMoving = false;
+            wait = 0;
         }
 
         /*
-         * Auto-movement 
+         * --FixedUpdate occurs slightly before Update()
+         * 
+         Auto-movement 
          *
          * Character movement is toggled on and off with the up-arrow on the keyboard
          * Note to self-- delete the other input keys such as left,right,shift keys
@@ -183,36 +248,31 @@ namespace UnityStandardAssets.Characters.FirstPerson
          * @date 12/29/2015
          * 
          */
-        public bool isMoving = false;
-        //This is a forward vector? da fuq
-        public static float speed = 5.0f;
-        Vector3 forwardMovement = new Vector3(0.0f, 1.0f);
-        Vector3 backwardMovement = new Vector3(0.0f, 0.0f);
-        public int wait = 0;
-        public static int waitTime = 20; //this seems like a reasonable amount of wait time between inputs
+        private void FixedUpdate() {
+            GroundCheck(); //@not mine
+            Vector2 userInput = GetInput(); //Take in user input
 
-        /*
-         * FixedUpdate occurs slightly before Update()
-         */
-        private void FixedUpdate()
-        {
-            GroundCheck(); //gotta check the ground k.
-            Vector2 userInput = GetInput();
-            //print(userInput);
-            //print(wait);
-
-            Vector2 input = backwardMovement; //defualt to no-movement
+            Vector2 input = backwardMovement; //Default to no movement
+            //Make sure time has passed between the last input
             if (wait > 0) {
-                wait--; //stall so we dont have multiple inputs
+                wait--;
             }
+            //If the up-key was pressed
             if (userInput.y > 0) {
                 if (wait == 0) {
-                    isMoving = !isMoving; //toggle our move state
+                    if (!gameStarted) gameStarted = true; //Looks like the game started
+                    isMoving = !isMoving; //Toggle our move state
                     wait = waitTime;
                 }
             }
+            //Test restart button ~~ on the left/right key
+            if(userInput.x > 0)
+            {
+                print("bam");
+                restart();
+            }
 
-            //Start moving forward if we should be
+            //Start moving forward if we should be..
             if(isMoving) {
                 input = forwardMovement;
             }
