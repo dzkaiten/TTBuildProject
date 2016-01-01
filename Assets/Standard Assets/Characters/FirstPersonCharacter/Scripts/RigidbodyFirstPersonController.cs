@@ -8,17 +8,19 @@ namespace UnityStandardAssets.Characters.FirstPerson
     [RequireComponent(typeof (CapsuleCollider))]
     public class RigidbodyFirstPersonController : MonoBehaviour
     {
+        private static float speed = 30.0f; //Base speed for the player
+
         [Serializable]
         public class MovementSettings
         {
-            public float ForwardSpeed = 8.0f;   // Speed when walking forward
+            public float ForwardSpeed = 30.0f;   // Speed when walking forward
             public float BackwardSpeed = 4.0f;  // Speed when walking backwards
             public float StrafeSpeed = 4.0f;    // Speed when walking sideways
             public float RunMultiplier = 2.0f;   // Speed when sprinting
 	        public KeyCode RunKey = KeyCode.LeftShift;
             public float JumpForce = 30f;
             public AnimationCurve SlopeCurveModifier = new AnimationCurve(new Keyframe(-90.0f, 1.0f), new Keyframe(0.0f, 1.0f), new Keyframe(90.0f, 0.0f));
-            [HideInInspector] public float CurrentTargetSpeed = 8f;
+            [HideInInspector] public float CurrentTargetSpeed = speed;
 
 #if !MOBILE_INPUT
             private bool m_Running;
@@ -39,9 +41,10 @@ namespace UnityStandardAssets.Characters.FirstPerson
 				}
 				if (input.y > 0)
 				{
-					//forwards
+                    //forwards
+                    print(ForwardSpeed);
 					//handled last as if strafing and moving forward at the same time forwards speed should take precedence
-					CurrentTargetSpeed = ForwardSpeed;
+					CurrentTargetSpeed = speed;
 				}
 #if !MOBILE_INPUT
 	            if (Input.GetKey(RunKey))
@@ -153,7 +156,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
         
         /* Game Invarients */
         private string message = ""; //Test GUI Message for the player
-        private static float speed = 8.0f; //Base speed for the player
         private Vector3 forwardMovement = new Vector3(0.0f, 1.0f); //Forward Vector
         private Vector3 backwardMovement = new Vector3(0.0f, 0.0f); //Backward-Stop Vector
         private static int waitTime = 20; //this seems like a reasonable amount of wait time between inputs
@@ -291,6 +293,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 if (m_RigidBody.velocity.sqrMagnitude <
                     (movementSettings.CurrentTargetSpeed*movementSettings.CurrentTargetSpeed))
                 {
+                    print(desiredMove * SlopeMultiplier());
                     m_RigidBody.AddForce(desiredMove*SlopeMultiplier(), ForceMode.Impulse);
                 }
             }
