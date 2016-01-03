@@ -265,6 +265,16 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			inDir = angle;
 		}
 		
+		/*
+		 *
+		 Needle compass works by aiming the correct and incorrect arrows at their
+		 respective positions.  Then in the RotateView(), as the character moves we
+		 need to minus their new angle as they rotate from the correct and incorrect 
+		 arrow angles to keep the correct angle.
+		 
+		 These angles are set in Unity on the cube objects themselves
+		 
+		 */
 		void changeNeedle(float nangle) {
 			angle = answerDir - nangle;
 			angle2 = inDir - nangle;
