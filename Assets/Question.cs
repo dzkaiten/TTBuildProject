@@ -19,4 +19,8 @@ public class Question {
 	public string[] getAnswers() {
 		return answers;
 	}
+	
+	public int getIndex() {
+		return cIndex;
+	}
 }

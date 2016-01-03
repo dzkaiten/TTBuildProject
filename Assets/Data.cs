@@ -13,9 +13,9 @@ public class Data : MonoBehaviour {
     }
     
     void init() {
-        Question q1 = new Question("question", new string[] {"true", "false"}, 1);
-		Question q2 = new Question("question32", new string[] {"true", "false"}, 1);
-		Question q3 = new Question("question45", new string[] {"true", "false"}, 1);
+        Question q1 = new Question("5+5", new string[] {"10", "3"}, 0);
+		Question q2 = new Question("5+8", new string[] {"5", "13"}, 1);
+		Question q3 = new Question("5+10", new string[] {"15", "20"}, 0);
         // define q1 & q2 up here
         questions.Add(q1);
 		questions.Add(q2);

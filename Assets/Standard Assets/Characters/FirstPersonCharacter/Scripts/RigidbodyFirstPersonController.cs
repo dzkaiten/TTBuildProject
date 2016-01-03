@@ -184,17 +184,26 @@ namespace UnityStandardAssets.Characters.FirstPerson
             message = text;
         }
 
+		static int ansHeight = 60;
+		static int ansX = Screen.width / 4;
+		static int ansX2 = Screen.width;
+		static int arrowDif = 75;
+		
 		//public Texture2D compass; // compass image
 		public Texture2D needle; // needle image (same size of compass)
-		private static Rect r = new Rect(10, 10, 50, 50); // rect where to draw compass
+		private static Rect r = new Rect(ansX + arrowDif, ansHeight + 30, 50, 50); // rect where to draw compass
 		float angle; // angle to rotate the needle
 		Vector2 p = new Vector2(r.x+r.width/2,r.y+r.height/2); // find the center
 		
-		private static Rect r2 = new Rect(100, 100, 50, 50); // rect where to draw compass
+		private static Rect r2 = new Rect(ansX2 + arrowDif, ansHeight + 30, 50, 50); // rect where to draw compass
 		float angle2; // angle to rotate the needle
 		Vector2 p2 = new Vector2(r2.x+r2.width/2,r2.y+r2.height/2); // find the center
 		
+		string[] ans;
+		
 		bool arrowVis = false;
+		
+		
 		
         /*
          * OnGUI
@@ -202,6 +211,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
          * GUI in front of the player screen
          */
         void OnGUI() {
+		print(Screen.width);
             //Format the clock timer
             var minutes = time / 60; //Divide the guiTime by sixty to get the minutes.
             var seconds = time % 60;//Use the euclidean division for the seconds.
@@ -215,9 +225,11 @@ namespace UnityStandardAssets.Characters.FirstPerson
             var centeredStyleBig = GUI.skin.GetStyle("Label");
             centeredStyleBig.fontSize = 20;
             centeredStyleBig.alignment = TextAnchor.UpperCenter;
-
+			
             //Display Message
             GUI.Label(new Rect(Screen.width / 2 - 50, Screen.height / 2 - 25, 200, 50), message, centeredStyle);
+			GUI.Label(new Rect(ansX, ansHeight, 200, 50), ans[0], centeredStyle);
+			GUI.Label(new Rect(ansX2, ansHeight, 200, 50), ans[1], centeredStyle);
             //Display Time
             GUI.Label(new Rect(Screen.width / 2 - 50, 25, 200, 50), timerLabel, centeredStyleBig);
 
@@ -237,6 +249,10 @@ namespace UnityStandardAssets.Characters.FirstPerson
 		float answerDir = 0.0f;
 		float inDir = 0.0f;
 		
+		public void changeAns(string[] answ) {
+			ans = answ;
+		}
+		
 		public void changeVis(bool vis) {
 			arrowVis = vis;
 		}
@@ -245,7 +261,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			answerDir = angle;
 		}
 		
-		public void changeInArrow(float angle) {
+		public void changeArrow2(float angle) {
 			inDir = angle;
 		}
 		
