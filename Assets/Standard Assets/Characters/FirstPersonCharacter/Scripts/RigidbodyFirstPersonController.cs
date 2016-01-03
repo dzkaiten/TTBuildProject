@@ -10,6 +10,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
     {
         private static float speed = 30.0f; //Base speed for the player
 
+		
         [Serializable]
         public class MovementSettings
         {
@@ -42,7 +43,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
 				if (input.y > 0)
 				{
                     //forwards
-                    print(ForwardSpeed);
 					//handled last as if strafing and moving forward at the same time forwards speed should take precedence
 					CurrentTargetSpeed = speed;
 				}
@@ -129,6 +129,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
         //Camera Control
         private void RotateView()
         {
+			//changeNeedle(50.0f);
+		
             //avoids the mouse looking if the game is effectively paused
             if (Mathf.Abs(Time.timeScale) < float.Epsilon) return;
 
@@ -137,8 +139,12 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
             mouseLook.LookRotation(transform, cam.transform);
 
+			//Points the needle in the direction of...
+			changeNeedle(oldYRotation);
+
             if (m_IsGrounded || advancedSettings.airControl)
             {
+				
                 // Rotate the rigidbody velocity to match the new direction that the character is looking
                 Quaternion velRotation = Quaternion.AngleAxis(transform.eulerAngles.y - oldYRotation, Vector3.up);
                 m_RigidBody.velocity = velRotation * m_RigidBody.velocity;
@@ -178,6 +184,18 @@ namespace UnityStandardAssets.Characters.FirstPerson
             message = text;
         }
 
+		//public Texture2D compass; // compass image
+		public Texture2D needle; // needle image (same size of compass)
+		private static Rect r = new Rect(10, 10, 50, 50); // rect where to draw compass
+		float angle; // angle to rotate the needle
+		Vector2 p = new Vector2(r.x+r.width/2,r.y+r.height/2); // find the center
+		
+		private static Rect r2 = new Rect(100, 100, 50, 50); // rect where to draw compass
+		float angle2; // angle to rotate the needle
+		Vector2 p2 = new Vector2(r2.x+r2.width/2,r2.y+r2.height/2); // find the center
+		
+		bool arrowVis = false;
+		
         /*
          * OnGUI
          *
@@ -202,7 +220,47 @@ namespace UnityStandardAssets.Characters.FirstPerson
             GUI.Label(new Rect(Screen.width / 2 - 50, Screen.height / 2 - 25, 200, 50), message, centeredStyle);
             //Display Time
             GUI.Label(new Rect(Screen.width / 2 - 50, 25, 200, 50), timerLabel, centeredStyleBig);
+
+			//Compass
+			//GUI.DrawTexture(r, compass); // draw the compass...
+			 var svMat = GUI.matrix; // save gui matrix
+			 GUIUtility.RotateAroundPivot(angle,p); // prepare matrix to rotate
+			 if(arrowVis) GUI.DrawTexture(r,needle); // draw the needle rotated by angle
+			 GUI.matrix = svMat; // restore gui matrix
+			 
+			 svMat = GUI.matrix; // save gui matrix
+			 GUIUtility.RotateAroundPivot(angle2,p2); // prepare matrix to rotate
+			 if(arrowVis) GUI.DrawTexture(r2,needle); // draw the needle rotated by angle
+			 GUI.matrix = svMat; // restore gui matrix
         }
+		
+		float answerDir = 0.0f;
+		float inDir = 0.0f;
+		
+		public void changeVis(bool vis) {
+			arrowVis = vis;
+		}
+		
+		public void changeArrow(float angle) {
+			answerDir = angle;
+		}
+		
+		public void changeInArrow(float angle) {
+			inDir = angle;
+		}
+		
+		void changeNeedle(float nangle) {
+			angle = answerDir - nangle;
+			angle2 = inDir - nangle;
+		}
+		
+		/*
+		var dirVector = destinationTransform.position - player.position;
+		dirVector.y = 0; // remove the vertical component, if any
+		var rot = Quaternion.FromToRotation(northVector, dirVector);
+		var angle: float; // angle is what we want
+		var axis: Vector3; // but an axis variable must be provided as well
+		rot.ToAngleAxis(angle, axis); // get the angle*/
 
         //Watch the camera rotation every update
         private void Update() {
@@ -237,6 +295,10 @@ namespace UnityStandardAssets.Characters.FirstPerson
             isMoving = false;
             wait = 0;
         }
+		/*
+		public Transform target; //Target to point at (you could set this to any gameObject dynamically)
+		private Vector3 targetPos; //Target position on screen
+		private Vector3 screenMiddle;//Middle of the screen */
 
         /*
          * --FixedUpdate occurs slightly before Update()
@@ -251,6 +313,27 @@ namespace UnityStandardAssets.Characters.FirstPerson
          * 
          */
         private void FixedUpdate() {
+		/*
+			//Get the targets position on screen into a Vector3
+			targetPos = cam.WorldToScreenPoint (target.transform.position);
+			//Get the middle of the screen into a Vector3
+			screenMiddle = new Vector3(Screen.width/2, Screen.height/2, 0); 
+			//Compute the angle from screenMiddle to targetPos
+			var tarAngle = (Mathf.Atan2(targetPos.x-screenMiddle.x,Screen.height-targetPos.y-screenMiddle.y) * Mathf.Rad2Deg)+90;
+			if (tarAngle < 0) tarAngle +=360;
+
+
+			 //Calculate the angle from the camera to the target
+			 var targetDir = target.transform.position - cam.transform.position;
+			 var forward = cam.transform.forward;
+			 var angle = Vector3.Angle(targetDir, forward);
+			 //If the angle exceeds 90deg inverse the rotation to point correctly
+			 if(angle < 90){
+				 transform.localRotation = Quaternion.Euler(-tarAngle,90,270);
+			 } else {
+				 transform.localRotation = Quaternion.Euler(tarAngle,270,90);
+			 } */
+		
             GroundCheck(); //@not mine
             Vector2 userInput = GetInput(); //Take in user input
 
@@ -293,7 +376,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 if (m_RigidBody.velocity.sqrMagnitude <
                     (movementSettings.CurrentTargetSpeed*movementSettings.CurrentTargetSpeed))
                 {
-                    print(desiredMove * SlopeMultiplier());
                     m_RigidBody.AddForce(desiredMove*SlopeMultiplier(), ForceMode.Impulse);
                 }
             }
