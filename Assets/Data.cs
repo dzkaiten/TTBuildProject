@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 public class Data : MonoBehaviour {
     List<Question> questions = new List<Question>();
+	
     
     //string[,] array2Db = new string[3, 2]
 

@@ -14,7 +14,6 @@ public class CubeTrigger : MonoBehaviour {
 	}
 	
 	void init() {
-		print("Cube Initialized");
 		getQuestion();
 	}
 	

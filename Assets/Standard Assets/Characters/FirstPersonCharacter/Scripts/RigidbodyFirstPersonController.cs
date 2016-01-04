@@ -9,7 +9,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
     public class RigidbodyFirstPersonController : MonoBehaviour
     {
         private static float speed = 30.0f; //Base speed for the player
-
 		
         [Serializable]
         public class MovementSettings
@@ -121,10 +120,18 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         private void Start()
         {
+			
             m_RigidBody = GetComponent<Rigidbody>();
             m_Capsule = GetComponent<CapsuleCollider>();
             mouseLook.Init (transform, cam.transform);
+			CardboardOnGUI.onGUICallback += this.OnGUI; //cardboard
+			CardboardOnGUI.IsGUIVisible = true;
+			//print(this.OnGUI);
         }
+		
+		void OnDestroy() {
+			CardboardOnGUI.onGUICallback -= this.OnGUI;
+		}
 
         //Camera Control
         private void RotateView()
@@ -185,8 +192,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
         }
 
 		static int ansHeight = 60;
-		static int ansX = Screen.width / 4;
-		static int ansX2 = Screen.width;
+		static int ansX = (Screen.width / 2) + 40;
+		static int ansX2 = Screen.width - 10;
 		static int arrowDif = 75;
 		
 		//public Texture2D compass; // compass image
@@ -211,7 +218,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
          * GUI in front of the player screen
          */
         void OnGUI() {
-		print(Screen.width);
+			if (!CardboardOnGUI.OKToDraw(this)) return;
+			//print("HI?");
             //Format the clock timer
             var minutes = time / 60; //Divide the guiTime by sixty to get the minutes.
             var seconds = time % 60;//Use the euclidean division for the seconds.
@@ -227,7 +235,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             centeredStyleBig.alignment = TextAnchor.UpperCenter;
 			
             //Display Message
-            GUI.Label(new Rect(Screen.width / 2 - 50, Screen.height / 2 - 25, 200, 50), message, centeredStyle);
+            GUI.Label(new Rect(Screen.width / 2 - 50, Screen.height / 3, 200, 200), message, centeredStyle);
 			GUI.Label(new Rect(ansX, ansHeight, 200, 50), ans[0], centeredStyle);
 			GUI.Label(new Rect(ansX2, ansHeight, 200, 50), ans[1], centeredStyle);
             //Display Time
@@ -258,11 +266,11 @@ namespace UnityStandardAssets.Characters.FirstPerson
 		}
 		
 		public void changeArrow(float angle) {
-			answerDir = angle;
+			answerDir = angle - 90.0f;
 		}
 		
 		public void changeArrow2(float angle) {
-			inDir = angle;
+			inDir = angle - 90.0f;
 		}
 		
 		/*
@@ -379,7 +387,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
             //Test restart button ~~ on the left/right key
             if(userInput.x > 0)
             {
-                print("bam");
                 restart();
             }
 
