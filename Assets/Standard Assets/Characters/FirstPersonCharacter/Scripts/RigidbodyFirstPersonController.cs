@@ -205,9 +205,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
 		}
 
 		static int ansHeight = Screen.height / 5 - 15;
-		static int ansX = Screen.width - 175;
-		static int ansX2 = Screen.width - 75;
-		static int arrowDif = 60;
+		static int ansX = (Screen.width/2) + (Screen.width/4);
+		static int ansX2 = (Screen.width/2) - (Screen.width/4);
+		static int arrowDif = (Screen.width/8);
 		
 		//public Texture2D compass; // compass image
 		public Texture2D needle; // needle image (same size of compass)
