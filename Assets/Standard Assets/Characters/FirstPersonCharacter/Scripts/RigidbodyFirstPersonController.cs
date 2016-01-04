@@ -8,7 +8,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
     [RequireComponent(typeof (CapsuleCollider))]
     public class RigidbodyFirstPersonController : MonoBehaviour
     {
-        private static float speed = 30.0f; //Base speed for the player
+        private static float speed = 60.0f; //Base speed for the player
 		
         [Serializable]
         public class MovementSettings
@@ -137,7 +137,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private void RotateView()
         {
 			//changeNeedle(50.0f);
-		
+			
             //avoids the mouse looking if the game is effectively paused
             if (Mathf.Abs(Time.timeScale) < float.Epsilon) return;
 
@@ -147,7 +147,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             mouseLook.LookRotation(transform, cam.transform);
 
 			//Points the needle in the direction of...
-			changeNeedle(oldYRotation);
+			
 
             if (m_IsGrounded || advancedSettings.airControl)
             {
@@ -190,6 +190,19 @@ namespace UnityStandardAssets.Characters.FirstPerson
         public void changeText(string text) {
             message = text;
         }
+		
+		void OnEnable(){
+			Cardboard.SDK.OnTrigger += TriggerPulled;
+		}
+		
+		void TriggerPulled() {
+			print("The trigger was pulled!");
+			if (wait == 0) {
+				if (!gameStarted) gameStarted = true; //Looks like the game started
+				isMoving = !isMoving; //Toggle our move state
+				wait = waitTime;
+			}
+		}
 
 		static int ansHeight = 60;
 		static int ansX = (Screen.width / 2) + 40;
@@ -283,7 +296,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 		 These angles are set in Unity on the cube objects themselves
 		 
 		 */
-		void changeNeedle(float nangle) {
+		public void changeNeedle(float nangle) {
 			angle = answerDir - nangle;
 			angle2 = inDir - nangle;
 		}
@@ -378,17 +391,19 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
             //If the up-key was pressed
             if (userInput.y > 0) {
+			/*
                 if (wait == 0) {
                     if (!gameStarted) gameStarted = true; //Looks like the game started
                     isMoving = !isMoving; //Toggle our move state
                     wait = waitTime;
-                }
+                } */
             }
             //Test restart button ~~ on the left/right key
+			/*
             if(userInput.x > 0)
             {
                 restart();
-            }
+            } */
 
             //Start moving forward if we should be..
             if(isMoving) {

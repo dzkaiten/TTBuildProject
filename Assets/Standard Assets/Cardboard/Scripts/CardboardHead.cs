@@ -96,9 +96,10 @@ public class CardboardHead : MonoBehaviour {
     }
     updated = true;
     Cardboard.SDK.UpdateState();
-
     if (trackRotation) {
       var rot = Cardboard.SDK.HeadPose.Orientation;
+	  GameObject.Find("Player").GetComponent<UnityStandardAssets.Characters.FirstPerson.RigidbodyFirstPersonController>().changeNeedle(rot.eulerAngles.y);
+	  
       if (target == null) {
         transform.localRotation = rot;
       } else {
