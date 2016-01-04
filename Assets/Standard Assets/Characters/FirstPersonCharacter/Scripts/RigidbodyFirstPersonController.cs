@@ -8,7 +8,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
     [RequireComponent(typeof (CapsuleCollider))]
     public class RigidbodyFirstPersonController : MonoBehaviour
     {
-        private static float speed = 30.0f; //Base speed for the player
+        private static float speed = 20.0f; //Base speed for the player
 		
         [Serializable]
         public class MovementSettings
@@ -204,10 +204,10 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			}
 		}
 
-		static int ansHeight = 60;
-		static int ansX = (Screen.width / 2) + 40;
-		static int ansX2 = Screen.width - 10;
-		static int arrowDif = 75;
+		static int ansHeight = Screen.height / 5 - 15;
+		static int ansX = Screen.width - 175;
+		static int ansX2 = Screen.width - 75;
+		static int arrowDif = 60;
 		
 		//public Texture2D compass; // compass image
 		public Texture2D needle; // needle image (same size of compass)
@@ -219,7 +219,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 		float angle2; // angle to rotate the needle
 		Vector2 p2 = new Vector2(r2.x+r2.width/2,r2.y+r2.height/2); // find the center
 		
-		string[] ans;
+		string[] ans = {"", ""};
 		
 		bool arrowVis = false;
 		
@@ -252,7 +252,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			GUI.Label(new Rect(ansX, ansHeight, 200, 50), ans[0], centeredStyle);
 			GUI.Label(new Rect(ansX2, ansHeight, 200, 50), ans[1], centeredStyle);
             //Display Time
-            GUI.Label(new Rect(Screen.width / 2 - 50, 25, 200, 50), timerLabel, centeredStyleBig);
+            GUI.Label(new Rect(Screen.width / 2 - 50, (Screen.height / 2) + 50, 200, 50), timerLabel, centeredStyleBig);
 
 			//Compass
 			//GUI.DrawTexture(r, compass); // draw the compass...
@@ -279,11 +279,11 @@ namespace UnityStandardAssets.Characters.FirstPerson
 		}
 		
 		public void changeArrow(float angle) {
-			answerDir = angle - 90.0f;
+			answerDir = angle;
 		}
 		
 		public void changeArrow2(float angle) {
-			inDir = angle - 90.0f;
+			inDir = angle;
 		}
 		
 		/*
@@ -418,7 +418,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 // always move along the camera forward as it is the direction that it being aimed at
 				Vector3 desiredMove = cam.transform.forward*input.y + cam.transform.right*input.x;
                 desiredMove = Vector3.ProjectOnPlane(desiredMove, m_GroundContactNormal).normalized;
-				print(movementSettings.CurrentTargetSpeed);
                 desiredMove.x = desiredMove.x*speed;
                 desiredMove.z = desiredMove.z*speed;
                 desiredMove.y = desiredMove.y*speed;
