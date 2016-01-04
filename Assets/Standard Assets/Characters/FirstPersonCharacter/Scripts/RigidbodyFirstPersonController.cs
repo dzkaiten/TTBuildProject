@@ -8,7 +8,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
     [RequireComponent(typeof (CapsuleCollider))]
     public class RigidbodyFirstPersonController : MonoBehaviour
     {
-        private static float speed = 60.0f; //Base speed for the player
+        private static float speed = 30.0f; //Base speed for the player
 		
         [Serializable]
         public class MovementSettings
@@ -311,7 +311,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         //Watch the camera rotation every update
         private void Update() {
-            RotateView();
+            //RotateView();
 
             //If the game is in progress, we need to be counting the clock
             if (gameStarted) time += Time.deltaTime;
@@ -382,7 +382,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			 } */
 		
             GroundCheck(); //@not mine
-            Vector2 userInput = GetInput(); //Take in user input
+            //Vector2 userInput = GetInput(); //Take in user input
 
             Vector2 input = backwardMovement; //Default to no movement
             //Make sure time has passed between the last input
@@ -390,14 +390,14 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 wait--;
             }
             //If the up-key was pressed
-            if (userInput.y > 0) {
 			/*
+            if (userInput.y > 0) {
                 if (wait == 0) {
                     if (!gameStarted) gameStarted = true; //Looks like the game started
                     isMoving = !isMoving; //Toggle our move state
                     wait = waitTime;
-                } */
-            }
+                } 
+            }*/
             //Test restart button ~~ on the left/right key
 			/*
             if(userInput.x > 0)
@@ -412,21 +412,22 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
             //IGNORE ALL THIS CODE BELOW --------------------------------------------------------------------------------------
             //This does everything
+			
             if ((Mathf.Abs(input.x) > float.Epsilon || Mathf.Abs(input.y) > float.Epsilon) && (advancedSettings.airControl || m_IsGrounded))
             {
                 // always move along the camera forward as it is the direction that it being aimed at
-                Vector3 desiredMove = cam.transform.forward*input.y + cam.transform.right*input.x;
+				Vector3 desiredMove = cam.transform.forward*input.y + cam.transform.right*input.x;
                 desiredMove = Vector3.ProjectOnPlane(desiredMove, m_GroundContactNormal).normalized;
-
-                desiredMove.x = desiredMove.x*movementSettings.CurrentTargetSpeed;
-                desiredMove.z = desiredMove.z*movementSettings.CurrentTargetSpeed;
-                desiredMove.y = desiredMove.y*movementSettings.CurrentTargetSpeed;
+				print(movementSettings.CurrentTargetSpeed);
+                desiredMove.x = desiredMove.x*speed;
+                desiredMove.z = desiredMove.z*speed;
+                desiredMove.y = desiredMove.y*speed;
                 if (m_RigidBody.velocity.sqrMagnitude <
-                    (movementSettings.CurrentTargetSpeed*movementSettings.CurrentTargetSpeed))
+                    (speed*speed))
                 {
                     m_RigidBody.AddForce(desiredMove*SlopeMultiplier(), ForceMode.Impulse);
                 }
-            }
+            } 
 
             //Some kind of jumping code? Probably safe to delete
             if (m_IsGrounded)
